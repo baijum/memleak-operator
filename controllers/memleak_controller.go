@@ -19,18 +19,30 @@ package controllers
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	cachev1 "github.com/baijum/memleak-operator/api/v1"
+	olmv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 )
 
 // MemleakReconciler reconciles a Memleak object
 type MemleakReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+}
+
+type customResourceDefinition struct {
+	resource   *unstructured.Unstructured
+	serviceGVR *schema.GroupVersionResource
+	client     dynamic.Interface
+	ns         string
 }
 
 //+kubebuilder:rbac:groups=cache.example.com,resources=memleaks,verbs=get;list;watch;create;update;patch;delete
@@ -51,6 +63,12 @@ func (r *MemleakReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// TODO(user): your logic here
 
+	c := customResourceDefinition{}
+
+	csvs, err := c.client.Resource(olmv1alpha1.SchemeGroupVersion.WithResource("clusterserviceversions")).Namespace(c.ns).List(context.Background(),
+		metav1.ListOptions{})
+	_ = csvs
+	_ = err
 	return ctrl.Result{}, nil
 }
 
