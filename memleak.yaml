@@ -1,0 +1,8 @@
+apiVersion: cache.example.com/v1
+kind: Memleak
+metadata:
+  name: mem-leak
+spec:
+  
+  size: 3
+
