@@ -18,7 +18,7 @@ package controllers
 
 import (
 	"context"
-
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -35,7 +35,8 @@ import (
 // MemleakReconciler reconciles a Memleak object
 type MemleakReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	dynClient dynamic.Interface
+	Scheme    *runtime.Scheme
 }
 
 type customResourceDefinition struct {
@@ -63,17 +64,19 @@ func (r *MemleakReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// TODO(user): your logic here
 
-	c := customResourceDefinition{}
-
-	csvs, err := c.client.Resource(olmv1alpha1.SchemeGroupVersion.WithResource("clusterserviceversions")).Namespace(c.ns).List(context.Background(),
+	fmt.Println("BEFORE CSV CALLING")
+	csvs, err := r.dynClient.Resource(olmv1alpha1.SchemeGroupVersion.WithResource("clusterserviceversions")).Namespace("default").List(context.Background(),
 		metav1.ListOptions{})
+	fmt.Printf("bbbbbbbbbb %v", csvs)
 	_ = csvs
 	_ = err
+	fmt.Println("AFTER CSV CALLING")
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *MemleakReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.dynClient, _ = dynamic.NewForConfig(mgr.GetConfig())
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cachev1.Memleak{}).
 		Complete(r)
