@@ -1,0 +1,24 @@
+# permissions for end users to edit memleaks.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: memleak-editor-role
+rules:
+- apiGroups:
+  - cache.example.com
+  resources:
+  - memleaks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cache.example.com
+  resources:
+  - memleaks/status
+  verbs:
+  - get
